@@ -294,7 +294,7 @@ def main():
             showlegend=True,
             legend=dict(
               x=0.5,  # Position legend to the right of the plot (adjust as needed)
-              y=0.97,  # Position legend at the top
+              y=-0.35,  # Position legend at the top
               xanchor='center',  # Center the legend horizontally
               yanchor='bottom',
               traceorder='normal',

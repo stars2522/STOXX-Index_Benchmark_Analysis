@@ -293,11 +293,15 @@ def main():
             template="plotly_dark",
             showlegend=True,
             legend=dict(
-              x=1.08,  # Position legend to the right of the plot (adjust as needed)
-              y=1,  # Position legend at the top
+              x=0.5,  # Position legend to the right of the plot (adjust as needed)
+              y=0.97,  # Position legend at the top
+              xanchor='center',  # Center the legend horizontally
+              yanchor='bottom',
               traceorder='normal',
-              orientation='v'  # Vertical orientation
-    ),
+              orientation='h',font=dict(size=10),
+              itemwidth=50,  # Set width for each legend item (this can help prevent wrapping)
+        tracegroupgap=8,
+    ),margin=dict(t=80)
         )
         # Create the Plotly figure
         fig_ann_ret = go.Figure()
@@ -378,17 +382,17 @@ def main():
            csv_annual_ret = convert_df_to_csv(annual_returns_df2)
            st.markdown(generate_download_link(csv_annual_ret, "Annual Returns.csv"), unsafe_allow_html=True)
         
-# Create two columns to display tables side by side
-        col5, col6 = st.columns([0.5, 0.5])  # Both columns will have equal width
-        # Display the second table (rnr_benchmark_index) in the second column
-        with col5:
-            st.subheader('Risk-Return Profile')
-            st.write(rnr_benchmark_index2)  # Display the first 5 rows of rnr_benchmark_index
+# # Create two columns to display tables side by side
+#         col5, col6 = st.columns([0.5, 0.5])  # Both columns will have equal width
+#         # Display the second table (rnr_benchmark_index) in the second column
+#         with col5:
+#             st.subheader('Risk-Return Profile')
+#             st.write(rnr_benchmark_index2)  # Display the first 5 rows of rnr_benchmark_index
 
-# Display the first table (annual_returns_df) in the first column
-        with col6:
-            st.subheader('Annual Returns (Last 6 years)')
-            st.dataframe(annual_returns_df2)  # Display the last 8 rows of annual_returns_df
+# # Display the first table (annual_returns_df) in the first column
+#         with col6:
+#             st.subheader('Annual Returns (Last 6 years)')
+#             st.dataframe(annual_returns_df2)  # Display the last 8 rows of annual_returns_df
 
 
 

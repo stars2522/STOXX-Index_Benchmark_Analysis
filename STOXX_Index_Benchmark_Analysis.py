@@ -3,6 +3,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
 import functions_file as functions
+import os
 
 # Define the function to process the data
 def process_index_data(file_path, portfolio_name):
@@ -39,7 +40,6 @@ def process_index_data(file_path, portfolio_name):
     else:
         incomplete_month = None
         # st.write(f"Next month's data exists, considering {last_month}/{last_year} as a complete month.")
-    
     # Remove the data for the incomplete month if necessary
     if incomplete_month:
         index_file2 = index_file2[~((index_file2['Date'].dt.month == incomplete_month) & (index_file2['Date'].dt.year == last_year))]
@@ -58,6 +58,11 @@ st.set_page_config(
     layout="wide",  # "wide" layout increases the width of the content area
     initial_sidebar_state="expanded"  # Expands the sidebar by default
 )
+st.sidebar.markdown(
+    '<style> div[role="complementary"] { width: 200px; } </style>',
+    unsafe_allow_html=True
+)
+
 # Streamlit app
 def main():
     # Sidebar for user input
@@ -66,8 +71,19 @@ def main():
     index_file = st.sidebar.file_uploader("Upload the Index file (CSV or TXT)", type=["csv", "txt"])
     benchmark_file = st.sidebar.file_uploader("Upload the Benchmark file (CSV or TXT)", type=["csv", "txt"])
     
-    index_name = st.sidebar.text_input("Enter the Index name (CAPITAL LETTERS, e.g., 'SAXPMFGR')")
-    benchmark_name = st.sidebar.text_input("Enter the Benchmark name (CAPITAL LETTERS, e.g., 'SXXGR')")
+    # Automatically extract the index name from the file name (assuming the file name is in the format "h_{index_name}.txt")
+    if index_file:
+        index_name = os.path.splitext(index_file.name)[0]  # Remove file extension
+        index_name = index_name.replace("h_", "").upper()  # Remove "h_" and convert to uppercase
+        st.sidebar.write(f"Index Symbol: {index_name}")
+
+    if benchmark_file:
+    # Extract the benchmark name from the file name
+        benchmark_name = os.path.splitext(benchmark_file.name)[0]  # Remove file extension
+        benchmark_name = benchmark_name.replace("h_", "").upper()  # Remove "h_" and convert to uppercase
+        st.sidebar.write(f"Benchmark Symbol: {benchmark_name}")
+    # index_name = st.sidebar.text_input("Enter the Index name (CAPITAL LETTERS, e.g., 'SAXPMFGR')")
+    # benchmark_name = st.sidebar.text_input("Enter the Benchmark name (CAPITAL LETTERS, e.g., 'SXXGR')")
     
     # Main area
     st.title('Index-Benchmark Level Analysis')
@@ -78,7 +94,11 @@ def main():
         # Process index and benchmark data
         index_data = process_index_data(index_file, index_name)
         benchmark_data = process_index_data(benchmark_file, benchmark_name)
-        
+        final_date=index_data.iloc[-1]['Date']
+        # final_date = pd.to_datetime(final_date)
+        final_date=final_date.strftime("%d %B %Y")
+        st.write(f"Data as on {final_date} ")
+
         # Merge both dataframes based on Date
         merged_data = pd.merge(index_data, benchmark_data, on='Date', how='inner')
 ### Addtions 2
@@ -122,10 +142,16 @@ def main():
                                   labels={'Date': 'Date', 
                                           f'{index_name}': f'Index Level: {index_name}', 
                                           f'{benchmark_name}': f'Index Level: {benchmark_name}'})
+        # Update the legend names
+        fig_index_level.update_traces(name=f"{index_name}", selector=dict(name=f'Indexvalue_{index_name}'))
+
+        fig_index_level.update_traces(name=f"{benchmark_name}", selector=dict(name=f'Indexvalue_{benchmark_name}'))
         # Set the label for the y-axis
         fig_index_level.update_layout(
+            # height=1200,width=600,
                    yaxis_title="Index Level",  # You can adjust this label as per your need
                       )
+        # st.plotly_chart(fig_index_level, use_container_width=True)
         # Inspecting the color of the lines used in the figure
         for trace in fig_index_level['data']:
             print(f"Trace Name: {trace['name']}, Line Color: {trace['line']['color']}")
@@ -137,8 +163,14 @@ def main():
                                                 f'Cumulative_return_{index_name}': f'Cumulative Return: {index_name}', 
                                                 f'Cumulative_return_{benchmark_name}': f'Cumulative Return: {benchmark_name}'})
         fig_cumulative_return.update_layout(
+            # height=1200,width=600,
                    yaxis_title="Cumulative returns",yaxis=dict(tickformat='.0%'),  # You can adjust this label as per your need
                       )
+        # Update the legend names
+        fig_cumulative_return.update_traces(name=f"{index_name}", selector=dict(name=f'Cumulative_return_{index_name}'))
+
+        fig_cumulative_return.update_traces(name=f"{benchmark_name}", selector=dict(name=f'Cumulative_return_{benchmark_name}'))
+        # st.plotly_chart(fig_cumulative_return, use_container_width=True)
         # Plot the first chart: Index and Benchmark Returns
         fig_rnr = go.Figure()
 

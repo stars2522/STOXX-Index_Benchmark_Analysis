@@ -63,7 +63,13 @@ def convert_df_to_csv(df):
 #         Download {file_name.split('.')[0]} Data
 #     </a>
 #     """
-
+# Adjust the page configuration to have more space for charts
+st.set_page_config(
+    page_title="Streamlit App",
+    page_icon="📊",
+    layout="wide",  # "wide" layout increases the width of the content area
+    initial_sidebar_state="expanded"  # Expands the sidebar by default
+)
 # Apply custom CSS to force dark mode
 st.markdown(
     """
@@ -133,13 +139,7 @@ st.markdown(
 )
 
 
-# Adjust the page configuration to have more space for charts
-st.set_page_config(
-    page_title="Streamlit App",
-    page_icon="📊",
-    layout="wide",  # "wide" layout increases the width of the content area
-    initial_sidebar_state="expanded"  # Expands the sidebar by default
-)
+
 st.sidebar.markdown(
     '<style> div[role="complementary"] { width: 200px; } </style>',
     unsafe_allow_html=True

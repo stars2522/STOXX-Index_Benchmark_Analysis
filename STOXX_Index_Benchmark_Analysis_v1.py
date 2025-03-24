@@ -64,6 +64,73 @@ def convert_df_to_csv(df):
 #     </a>
 #     """
 
+# Apply custom CSS to force dark mode
+st.markdown(
+    """
+    <style>
+        /* Set the background color for the whole app to dark */
+        body {
+            background-color: #2E2E2E;
+            color: #FFFFFF;
+        }
+        
+        /* Set the sidebar background to dark */
+        .css-1d391kg {
+            background-color: #1E1E1E;
+            color: #FFFFFF;
+        }
+
+        /* Customize Streamlit widgets to have dark borders and text */
+        .stButton>button {
+            background-color: #444444;
+            color: white;
+            border-radius: 5px;
+            border: 1px solid #666;
+        }
+        .stButton>button:hover {
+            background-color: #333333;
+        }
+        
+        .stTextInput>div>input, .stFileUploader>div>input {
+            background-color: #444444;
+            color: white;
+            border: 1px solid #666;
+        }
+        
+        .stTextInput>div>input:focus, .stFileUploader>div>input:focus {
+            border: 2px solid #AAAAAA;
+        }
+
+        /* Set the header color */
+        .css-18e3th9 {
+            color: #FFFFFF;
+        }
+
+        /* Set the color for the sidebar header */
+        .css-1vqzcdh {
+            color: #FFFFFF;
+        }
+
+        /* Table styling for dark mode */
+        .stTable {
+            color: #FFFFFF;
+            background-color: #333333;
+        }
+
+        /* Styling for plots and other elements */
+        .stPlotlyChart {
+            background-color: #333333;
+            color: white;
+        }
+
+        /* Dark mode for the markdown area */
+        .stMarkdown {
+            color: #FFFFFF;
+        }
+
+    </style>
+    """, unsafe_allow_html=True
+)
 
 
 # Adjust the page configuration to have more space for charts

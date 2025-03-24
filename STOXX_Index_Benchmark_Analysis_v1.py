@@ -177,7 +177,7 @@ def main():
 
         fig_index_level.update_traces(name=f"{benchmark_name}", selector=dict(name=f'Indexvalue_{benchmark_name}'))
         # Set the label for the y-axis
-        fig_index_level.update_layout(
+        fig_index_level.update_layout(legend_title=None,
             # height=1200,width=600,
                    yaxis_title="Index Level",  # You can adjust this label as per your need
                       )
@@ -192,7 +192,7 @@ def main():
                                         labels={'Date': 'Date', 
                                                 f'Cumulative_return_{index_name}': f'Cumulative Return: {index_name}', 
                                                 f'Cumulative_return_{benchmark_name}': f'Cumulative Return: {benchmark_name}'})
-        fig_cumulative_return.update_layout(
+        fig_cumulative_return.update_layout(legend_title=None,
             # height=1200,width=600,
                    yaxis_title="Cumulative returns",yaxis=dict(tickformat='.0%'), # You can adjust this label as per your need
                       )
@@ -210,7 +210,7 @@ def main():
             y=rnr_benchmark_index[f'Annualised Return_{index_name}'],
             name=f'{index_name} Return',
             marker_color='#000001',
-            width=0.4
+            width=0.4,marker=dict(line=dict(width=0))
         ))
 
         fig_rnr.add_trace(go.Bar(
@@ -218,7 +218,7 @@ def main():
             y=rnr_benchmark_index[f'Annualised Return_{benchmark_name}'],
             name=f'{benchmark_name} Return',
             marker_color='#000002',
-            width=0.4
+            width=0.4,marker=dict(line=dict(width=0))
         ))
         #Add scatter traces for the Volatility of index and benchmark on secondary y-axis
         fig_rnr.add_trace(go.Scatter(

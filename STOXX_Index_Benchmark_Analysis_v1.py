@@ -138,7 +138,7 @@ def main():
         annual_returns_df2[f'{index_name}'] = annual_returns_df2[f'{index_name}'].apply(lambda x: f'{x:.2f}%')
         annual_returns_df2[f'{benchmark_name}'] = annual_returns_df2[f'{benchmark_name}'].apply(lambda x: f'{x:.2f}%')
         annual_returns_df2.set_index('Year',inplace=True)
-        st.dataframe(merged_data.head(10)) 
+        # st.dataframe(merged_data.head(10)) 
 #### ADDITIONS
         common_dates = index_data['Date'].unique().tolist()
         benchmark_data = benchmark_data[benchmark_data['Date'].isin(common_dates)]

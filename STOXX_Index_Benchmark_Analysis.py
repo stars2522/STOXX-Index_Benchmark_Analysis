@@ -52,15 +52,16 @@ def process_index_data(file_path, portfolio_name):
 
 # Function to convert DataFrame to CSV
 def convert_df_to_csv(df):
-    return df.to_csv(index=False).encode('utf-8')
+    return df.to_csv(index=False)
+# .encode('utf-8')
 
-def generate_download_link(csv_data, file_name):
-    return f"""
-    <a href="data:file/csv;base64,{csv_data}" download="{file_name}" style="text-align:center; display:block; margin-top: 10px;">
-        <img src="https://img.icons8.com/ios-filled/50/000000/download.png" width="30"/>
-        Download {file_name.split('.')[0]} Data
-    </a>
-    """
+# def generate_download_link(csv_data, file_name):
+#     return f"""
+#     <a href="data:file/csv;base64,{csv_data}" download="{file_name}" style="text-align:center; display:block; margin-top: 10px;">
+#         <img src="https://img.icons8.com/ios-filled/50/000000/download.png" width="30"/>
+#         Download {file_name.split('.')[0]} Data
+#     </a>
+#     """
 
 
 
@@ -114,8 +115,17 @@ def main():
 
         # Merge both dataframes based on Date
         merged_data = pd.merge(index_data, benchmark_data, on='Date', how='inner')
+        # Normalize the cumulative return to start from 0
+        merged_data[f'Cumulative_return_{index_name}'] -= merged_data[f'Cumulative_return_{index_name}'].iloc[0]
+        merged_data[f'Cumulative_return_{benchmark_name}'] -= merged_data[f'Cumulative_return_{benchmark_name}'].iloc[0]
+        # Assuming 'index_file2' is the DataFrame containing the index values
+        # Rebase the Index to start from 100
+        merged_data[f'Indexvalue_{index_name}'] = (merged_data[f'Indexvalue_{index_name}'] / merged_data[f'Indexvalue_{index_name}'].iloc[0]) * 100
+        merged_data[f'Indexvalue_{benchmark_name}'] = (merged_data[f'Indexvalue_{benchmark_name}'] / merged_data[f'Indexvalue_{benchmark_name}'].iloc[0]) * 100
+
         index_level_data=merged_data[['Date',f'Indexvalue_{index_name}',f'Indexvalue_{benchmark_name}']]
         cumulative_ret_data=merged_data[['Date',f'Cumulative_return_{index_name}',f'Cumulative_return_{benchmark_name}']]
+
 ### Addtions 2
         annual_returns_df = functions.calculate_annual_returns(merged_data, index_name, benchmark_name)
         annual_returns_df2=annual_returns_df[['Year',f'Annual_return_{index_name}',f'Annual_return_{benchmark_name}']]
@@ -141,8 +151,7 @@ def main():
         # Merge RNR data for both index and benchmark
         rnr_benchmark_index = pd.merge(period_rnr_index, period_rnr_benchmark, 
                                        on=['Period', 'Start Date', 'End Date'])
-        # Check if data is present in merged DataFrame
-        # st.write(rnr_benchmark_index.head())  # Debugging line to ensure data is correct
+        
         rnr_benchmark_index2=rnr_benchmark_index[['Period',f'Annualised Return_{index_name}',f'Annualised Return_{benchmark_name}',f'Volatility_{index_name}',f'Volatility_{benchmark_name}']]
         columns_to_process=[f'Annualised Return_{index_name}',f'Annualised Return_{benchmark_name}',f'Volatility_{index_name}',f'Volatility_{benchmark_name}']
         for col in columns_to_process:
@@ -151,43 +160,7 @@ def main():
         rnr_benchmark_index2.set_index('Period',inplace=True)
 
 
-    #     # Create download button for merged_data CSV
-
-    #     csv_data = convert_df_to_csv(index_level_data)
-    #     st.download_button(
-    #     label="Download Index Level Data",
-    #     data=csv_data,
-    #     file_name="Index_levels_data.csv",
-    #     mime="text/csv"
-    # )
-    #     csv_data = convert_df_to_csv(cumulative_ret_data)
-    #     st.download_button(
-    #     label="Download Cumulative returns Data",
-    #     data=csv_data,
-    #     file_name="Cumulative_returns_data.csv",
-    #     mime="text/csv"
-    # )
-
-
-    # # Create download button for annual_returns_df2 CSV
-    #     csv_annual_returns = convert_df_to_csv(annual_returns_df2)
-    #     st.download_button(
-    #     label="Download Annual Returns Data",
-    #     data=csv_annual_returns,
-    #     file_name="annual_returns.csv",
-    #     mime="text/csv"
-    # )
-
-    # # Create download button for rnr_benchmark_index2 CSV
-    #     csv_rnr_benchmark = convert_df_to_csv(rnr_benchmark_index2)
-    #     st.download_button(
-    #     label="Download Risk-Return Profile Data",
-    #     data=csv_rnr_benchmark,
-    #     file_name="risk_return_profile.csv",
-    #     mime="text/csv"
-    # )
-
-
+    
         # print(px.colors.qualitative.Plotly)
         # Plotting the Index Level chart using Plotly
         fig_index_level = px.line(merged_data, x='Date', y=[f'Indexvalue_{index_name}', f'Indexvalue_{benchmark_name}'],
@@ -204,15 +177,7 @@ def main():
             # height=1200,width=600,
                    yaxis_title="Index Level",  # You can adjust this label as per your need
                       )
-        # Create the download button for the Index Level Data (below the chart)
-#         csv_index_level = convert_df_to_csv(index_level_data)
-#         st.markdown(f"""
-#     <a href="data:file/csv;base64,{csv_index_level}" download="Index_levels_data.csv">
-#         <img src="https://img.icons8.com/ios-filled/50/000000/download.png" width="30"/>
-#         Download Index Levels Data
-#     </a>
-# """, unsafe_allow_html=True)
-        # st.plotly_chart(fig_index_level, use_container_width=True)
+        
         # Inspecting the color of the lines used in the figure
         for trace in fig_index_level['data']:
             print(f"Trace Name: {trace['name']}, Line Color: {trace['line']['color']}")
@@ -225,7 +190,7 @@ def main():
                                                 f'Cumulative_return_{benchmark_name}': f'Cumulative Return: {benchmark_name}'})
         fig_cumulative_return.update_layout(
             # height=1200,width=600,
-                   yaxis_title="Cumulative returns",yaxis=dict(tickformat='.0%'),  # You can adjust this label as per your need
+                   yaxis_title="Cumulative returns",yaxis=dict(tickformat='.0%'), # You can adjust this label as per your need
                       )
         # Update the legend names
         fig_cumulative_return.update_traces(name=f"{index_name}", selector=dict(name=f'Cumulative_return_{index_name}'))
@@ -351,18 +316,42 @@ def main():
 
         # Create two columns to display charts side by side
         col1, col2 = st.columns([0.6,0.6])
-        
         # Display the first chart (Index and Benchmark Levels)
         with col1:
             st.plotly_chart(fig_index_level)
             csv_index_level = convert_df_to_csv(index_level_data)
-            st.markdown(generate_download_link(csv_index_level, "Index levels.csv"), unsafe_allow_html=True)
-        
-        # Display the second chart (Cumulative Return)
+            st.markdown("<div style='text-align:center; margin-top: 10px;'>", unsafe_allow_html=True)
+            st.download_button(
+            label="Download Index Levels Data",
+            data=csv_index_level,
+            file_name="Index_levels_data.csv",
+            mime="text/csv"
+        )
+            st.markdown("</div>", unsafe_allow_html=True)
+    
+    # Display the second chart (Cumulative Return)
         with col2:
             st.plotly_chart(fig_cumulative_return)
             csv_cumulative_ret = convert_df_to_csv(cumulative_ret_data)
-            st.markdown(generate_download_link(csv_cumulative_ret, "Cumulative returns.csv"), unsafe_allow_html=True)
+            st.markdown("<div style='text-align:center; margin-top: 10px;'>", unsafe_allow_html=True)
+            st.download_button(
+            label="Download Cumulative Returns Data",
+            data=csv_cumulative_ret,
+            file_name="Cumulative_returns_data.csv",
+            mime="text/csv"
+        )
+            st.markdown("</div>", unsafe_allow_html=True)
+        # # Display the first chart (Index and Benchmark Levels)
+        # with col1:
+        #     st.plotly_chart(fig_index_level)
+        #     csv_index_level = convert_df_to_csv(index_level_data)
+        #     st.markdown(generate_download_link(csv_index_level, "Index levels.csv"), unsafe_allow_html=True)
+        
+        # # Display the second chart (Cumulative Return)
+        # with col2:
+        #     st.plotly_chart(fig_cumulative_return)
+        #     csv_cumulative_ret = convert_df_to_csv(cumulative_ret_data)
+        #     st.markdown(generate_download_link(csv_cumulative_ret, "Cumulative returns.csv"), unsafe_allow_html=True)
         
 
        
@@ -370,17 +359,46 @@ def main():
        # Now, display the remaining charts below the first two
         col3, col4 = st.columns([0.6, 0.6])
 
-       # Display the remaining charts just below the first two (adjust these charts to fit)
+        # Display the first chart (Risk-Return Profile)
         with col3:
-           st.plotly_chart(fig_rnr)
-           csv_rnr = convert_df_to_csv(rnr_benchmark_index2)
-           st.markdown(generate_download_link(csv_rnr, "Risk Return.csv"), unsafe_allow_html=True)
+            st.plotly_chart(fig_rnr)
+            rnr_benchmark_index2.reset_index(inplace=True)
+            csv_rnr = convert_df_to_csv(rnr_benchmark_index2)
+        # Centered download button below the chart
+            st.markdown("<div style='text-align:center; margin-top: 10px;'>", unsafe_allow_html=True)
+            st.download_button(
+            label="Download Risk-Return Data",
+            data=csv_rnr,
+            file_name="Risk_return_data.csv",
+            mime="text/csv"
+        )
+            st.markdown("</div>", unsafe_allow_html=True)
+
+    # Display the second chart (Annual Returns)
+        with col4:
+            st.plotly_chart(fig_ann_ret)
+            annual_returns_df2.reset_index(inplace=True)
+            csv_annual_ret = convert_df_to_csv(annual_returns_df2)
+        # Centered download button below the chart
+            st.markdown("<div style='text-align:center; margin-top: 10px;'>", unsafe_allow_html=True)
+            st.download_button(
+            label="Download Annual Returns Data",
+            data=csv_annual_ret,
+            file_name="Annual_returns_data.csv",
+            mime="text/csv"
+        )
+            st.markdown("</div>", unsafe_allow_html=True)
+    #    # Display the remaining charts just below the first two (adjust these charts to fit)
+    #     with col3:
+    #        st.plotly_chart(fig_rnr)
+    #        csv_rnr = convert_df_to_csv(rnr_benchmark_index2)
+    #        st.markdown(generate_download_link(csv_rnr, "Risk Return.csv"), unsafe_allow_html=True)
         
 
-        with col4:
-           st.plotly_chart(fig_ann_ret) 
-           csv_annual_ret = convert_df_to_csv(annual_returns_df2)
-           st.markdown(generate_download_link(csv_annual_ret, "Annual Returns.csv"), unsafe_allow_html=True)
+    #     with col4:
+    #        st.plotly_chart(fig_ann_ret) 
+    #        csv_annual_ret = convert_df_to_csv(annual_returns_df2)
+    #        st.markdown(generate_download_link(csv_annual_ret, "Annual Returns.csv"), unsafe_allow_html=True)
         
 # # Create two columns to display tables side by side
 #         col5, col6 = st.columns([0.5, 0.5])  # Both columns will have equal width

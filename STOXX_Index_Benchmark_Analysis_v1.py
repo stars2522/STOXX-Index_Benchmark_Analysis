@@ -46,6 +46,7 @@ def process_index_data(file_path, portfolio_name):
 
     # Calculate the return and cumulative return on the remaining data
     index_file2[f'Return_{portfolio_name}'] = index_file2[f'Indexvalue_{portfolio_name}'].pct_change()
+    index_file2.dropna(inplace=True)
     index_file2[f'Cumulative_return_{portfolio_name}'] = (1 + index_file2[f'Return_{portfolio_name}']).cumprod() - 1
     
     return index_file2
@@ -137,7 +138,7 @@ def main():
         annual_returns_df2[f'{index_name}'] = annual_returns_df2[f'{index_name}'].apply(lambda x: f'{x:.2f}%')
         annual_returns_df2[f'{benchmark_name}'] = annual_returns_df2[f'{benchmark_name}'].apply(lambda x: f'{x:.2f}%')
         annual_returns_df2.set_index('Year',inplace=True)
-        # st.dataframe(annual_returns_df.tail(8)) 
+        st.dataframe(merged_data.head(10)) 
 #### ADDITIONS
         common_dates = index_data['Date'].unique().tolist()
         benchmark_data = benchmark_data[benchmark_data['Date'].isin(common_dates)]

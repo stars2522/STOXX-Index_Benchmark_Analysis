@@ -270,7 +270,7 @@ def main():
               xanchor='center',  # Center the legend horizontally
               yanchor='bottom',
               traceorder='normal',
-              orientation='h',font=dict(size=10),
+              orientation='h',font=dict(size=12),
               itemwidth=50,  # Set width for each legend item (this can help prevent wrapping)
         tracegroupgap=8,
     ),margin=dict(t=80)

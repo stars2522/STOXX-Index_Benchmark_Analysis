@@ -65,7 +65,7 @@ def convert_df_to_csv(df):
 #     """
 # Adjust the page configuration to have more space for charts
 st.set_page_config(
-    page_title="Streamlit App",
+    page_title="STOXX INDEX-BENCHMARK LEVEL ANALYSIS",
     page_icon="📊",
     layout="wide",  # "wide" layout increases the width of the content area
     initial_sidebar_state="expanded" # Expands the sidebar by default

@@ -60,7 +60,6 @@ def main():
     
     # Main area
     st.title('Index-Benchmark Level Analysis')
-    st.write("""Upload your index file and benchmark file, and the app will process them and display their Index levels, Cumulative returns, Risk-Return Profile, Annual Returns.""")
 
 # =========================================================
 # CREATE INDEX AND BENCHMARK DATAFRAMES
@@ -72,8 +71,8 @@ def main():
         benchmark_data = functions.process_index_data(benchmark_file, benchmark_name)
         final_date=index_data.iloc[-1]['Date']
         # final_date = pd.to_datetime(final_date)
-        final_date=final_date.strftime("%d %B %Y")
-        st.write(f"Data as on {final_date} ")
+        final_date=final_date.strftime("%d %b %Y")
+
 
 # ===============================================================================
 # MERGE THE TWO TO GET COMMON DATES MASTER DATAFRAME, GIVES INDEX LEVEL DATAFRAME
@@ -131,7 +130,6 @@ def main():
         # Merge RNR data for both index and benchmark
         rnr_benchmark_index = pd.merge(period_rnr_index, period_rnr_benchmark, 
                                        on=['Period', 'Start Date', 'End Date'])
-        
         rnr_benchmark_index2=rnr_benchmark_index[['Period',f'Annualised Return_{index_name}',f'Annualised Return_{benchmark_name}',
                                                   f'Volatility_{index_name}',f'Volatility_{benchmark_name}']]
         for name in names:
@@ -293,9 +291,6 @@ def main():
         showgrid=True,
         # gridcolor='lightblue',
         gridwidth=1,
-        # zerolinecolor='navy',
-        # zeroline=True,  # Optional: Remove the y-axis zero line
-        # showline=True,  # Optional: Remove the y-axis line
         ticks='outside',  # Adds tick marks on the outside of the axis
         # tickson='boundaries',  # Tick marks at the boundaries, which includes zero
         range=[-0.5, 1.5],
@@ -305,13 +300,17 @@ def main():
 # =======================================
 # CHARTS CONFIGURATION AND OUTLINE
 # =======================================
-
+# Start and End Date for the Index Levels Chart
+        start_date_inl = index_level_data['Date'].iloc[0].strftime("%d %b %Y")
+        end_date_inl = index_level_data['Date'].iloc[-1].strftime("%d %b %Y")
         # Create two columns to display charts side by side
         col1, col2 = st.columns([0.6,0.6])
         # Display the first chart (Index and Benchmark Levels)
         with col1:
             st.plotly_chart(fig_index_level)
             csv_index_level = convert_df_to_csv(index_level_data)
+            st.markdown(f"<div style='text-align:center; margin-top: 10px; font-size: 12px;'>Date from {start_date_inl} till {end_date_inl}</div>", unsafe_allow_html=True)
+
             st.markdown("<div style='text-align:center; margin-top: 10px;'>", unsafe_allow_html=True)
             st.download_button(
             label="Download Index Levels Data",
@@ -325,6 +324,12 @@ def main():
         with col2:
             st.plotly_chart(fig_cumulative_return)
             csv_cumulative_ret = convert_df_to_csv(cumulative_ret_data)
+
+            # Start and End Date for the Index Levels Chart
+            start_date_cret = cumulative_ret_data['Date'].iloc[0].strftime("%d %b %Y")
+            end_date_cret = cumulative_ret_data['Date'].iloc[-1].strftime("%d %b %Y")
+            st.markdown(f"<div style='text-align:center; margin-top: 10px; font-size: 12px;'>Data from {start_date_cret} till {end_date_cret}</div>", unsafe_allow_html=True)
+
             st.markdown("<div style='text-align:center; margin-top: 10px;'>", unsafe_allow_html=True)
             st.download_button(
             label="Download Cumulative Returns Data",
@@ -343,6 +348,7 @@ def main():
             st.plotly_chart(fig_rnr)
             rnr_benchmark_index2.reset_index(inplace=True)
             csv_rnr = convert_df_to_csv(rnr_benchmark_index2)
+            st.markdown(f"<div style='text-align:center; margin-top: 10px; font-size: 12px;'>Data as on {final_date} </div>", unsafe_allow_html=True)
         # Centered download button below the chart
             st.markdown("<div style='text-align:center; margin-top: 10px;'>", unsafe_allow_html=True)
             st.download_button(
@@ -358,6 +364,8 @@ def main():
             st.plotly_chart(fig_ann_ret)
             annual_returns_df2.reset_index(inplace=True)
             csv_annual_ret = convert_df_to_csv(annual_returns_df2)
+            st.markdown(f"<div style='text-align:center; margin-top: 10px; font-size: 12px;'>Data from {start_date_inl} till {end_date_inl}</div>", unsafe_allow_html=True)
+
         # Centered download button below the chart
             st.markdown("<div style='text-align:center; margin-top: 10px;'>", unsafe_allow_html=True)
             st.download_button(

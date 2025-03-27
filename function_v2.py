@@ -155,6 +155,15 @@ def get_period_dates(df):
     last_value_date_5yr = get_previous_available_date(last_value_date_5yr, df)
     period_dates.append({"Period": "5 Years", "Last Value Date": last_value_date_5yr, "Start Date": actual_start_date_5yr, "End Date": end_date})
 
+    # 10-Year Start and End Date (considering leap year)
+    start_date_10yr = end_date - pd.DateOffset(years=10) + pd.DateOffset(days=1)  # Adjust to next day after 3 years back
+    if is_leap_year(end_date.year - 3) and end_date.month == 2 and end_date.day == 28:
+        start_date_10yr = start_date_10yr.replace(month=3, day=1)  # If the previous year was a leap year, set to March 1
+    actual_start_date_10yr = get_closest_date(start_date_10yr, df)
+    last_value_date_10yr = actual_start_date_10yr - pd.DateOffset(days=1)
+    last_value_date_10yr = get_previous_available_date(last_value_date_10yr, df)
+    period_dates.append({"Period": "10 Years", "Last Value Date": last_value_date_10yr, "Start Date": actual_start_date_10yr, "End Date": end_date})
+
     # Convert the list of dictionaries to a DataFrame
     period_df = pd.DataFrame(period_dates)
     
@@ -341,37 +350,37 @@ def calculate_annual_returns(master_file, index_name, benchmark_name):
     
     return annual_returns_df
 
-def load_factor_data(file):
-    # Load the Excel file using openpyxl
-    wb = load_workbook(file, data_only=True)
-    ws = wb['Factor Contributions']
+# def load_factor_data(file):
+#     # Load the Excel file using openpyxl
+#     wb = load_workbook(file, data_only=True)
+#     ws = wb['Factor Contributions']
 
-    # Initialize an empty list to store the data
-    data = []
+#     # Initialize an empty list to store the data
+#     data = []
 
-    # Skip the first 6 rows and use the 7th row as column names
-    for i, row in enumerate(ws.iter_rows(values_only=True)):
-        if i < 6:
-            continue  # Skip the first 6 rows
-        if all(cell is None for cell in row):  # Check if the entire row is empty
-            break  # Stop once we hit an empty row
+#     # Skip the first 6 rows and use the 7th row as column names
+#     for i, row in enumerate(ws.iter_rows(values_only=True)):
+#         if i < 6:
+#             continue  # Skip the first 6 rows
+#         if all(cell is None for cell in row):  # Check if the entire row is empty
+#             break  # Stop once we hit an empty row
 
-        # Append the row to data starting from the 7th row
-        data.append(row)
+#         # Append the row to data starting from the 7th row
+#         data.append(row)
 
-    # Extract the 7th row (index 6) as column names
-    column_names = data[0]  # The 7th row contains the column names
+#     # Extract the 7th row (index 6) as column names
+#     column_names = data[0]  # The 7th row contains the column names
 
-    # Create a DataFrame starting from the 8th row (index 1)
-    factor_df = pd.DataFrame(data[1:], columns=column_names)
-    factor_df['Source of Return'] = factor_df['Source of Return'].str.strip()  # Clean column names
+#     # Create a DataFrame starting from the 8th row (index 1)
+#     factor_df = pd.DataFrame(data[1:], columns=column_names)
+#     factor_df['Source of Return'] = factor_df['Source of Return'].str.strip()  # Clean column names
 
-    # Drop columns where the column name is None and all values are None
-    factor_df = factor_df.dropna(axis=1, how='all')  # Drop columns where all values are NaN
-    factor_df = factor_df.loc[:, factor_df.columns.notna()]  # Drop columns where column name is None
+#     # Drop columns where the column name is None and all values are None
+#     factor_df = factor_df.dropna(axis=1, how='all')  # Drop columns where all values are NaN
+#     factor_df = factor_df.loc[:, factor_df.columns.notna()]  # Drop columns where column name is None
 
-    # Return the relevant subset of the DataFrame
-    return factor_df[['Source of Return', 'Contribution', 'Risk']]
+#     # Return the relevant subset of the DataFrame
+#     return factor_df[['Source of Return', 'Contribution', 'Risk']]
 
 
 # import pandas as pd

@@ -2,8 +2,10 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import os
-# from openpyxl import load_workbook
+from openpyxl import load_workbook
 import streamlit as st
+import plotly.graph_objects as go
+import plotly.express as px
 
 # =========================================================
 # Function to generate index file in a certain format
@@ -350,119 +352,324 @@ def calculate_annual_returns(master_file, index_name, benchmark_name):
     
     return annual_returns_df
 
-# def load_factor_data(file):
-#     # Load the Excel file using openpyxl
-#     wb = load_workbook(file, data_only=True)
-#     ws = wb['Factor Contributions']
+def load_factor_data(file):
+    # Load the Excel file using openpyxl
+    wb = load_workbook(file, data_only=True)
+    ws = wb['Factor Contributions']
 
-#     # Initialize an empty list to store the data
-#     data = []
+    # Initialize an empty list to store the data
+    data = []
 
-#     # Skip the first 6 rows and use the 7th row as column names
-#     for i, row in enumerate(ws.iter_rows(values_only=True)):
-#         if i < 6:
-#             continue  # Skip the first 6 rows
-#         if all(cell is None for cell in row):  # Check if the entire row is empty
-#             break  # Stop once we hit an empty row
+    # Skip the first 6 rows and use the 7th row as column names
+    for i, row in enumerate(ws.iter_rows(values_only=True)):
+        if i < 6:
+            continue  # Skip the first 6 rows
+        if all(cell is None for cell in row):  # Check if the entire row is empty
+            break  # Stop once we hit an empty row
 
-#         # Append the row to data starting from the 7th row
-#         data.append(row)
+        # Append the row to data starting from the 7th row
+        data.append(row)
 
-#     # Extract the 7th row (index 6) as column names
-#     column_names = data[0]  # The 7th row contains the column names
+    # Extract the 7th row (index 6) as column names
+    column_names = data[0]  # The 7th row contains the column names
 
-#     # Create a DataFrame starting from the 8th row (index 1)
-#     factor_df = pd.DataFrame(data[1:], columns=column_names)
-#     factor_df['Source of Return'] = factor_df['Source of Return'].str.strip()  # Clean column names
+    # Create a DataFrame starting from the 8th row (index 1)
+    factor_df = pd.DataFrame(data[1:], columns=column_names)
+    factor_df['Source of Return'] = factor_df['Source of Return'].str.strip()  # Clean column names
 
-#     # Drop columns where the column name is None and all values are None
-#     factor_df = factor_df.dropna(axis=1, how='all')  # Drop columns where all values are NaN
-#     factor_df = factor_df.loc[:, factor_df.columns.notna()]  # Drop columns where column name is None
+    # Drop columns where the column name is None and all values are None
+    factor_df = factor_df.dropna(axis=1, how='all')  # Drop columns where all values are NaN
+    factor_df = factor_df.loc[:, factor_df.columns.notna()]  # Drop columns where column name is None
 
-#     # Return the relevant subset of the DataFrame
-#     return factor_df[['Source of Return', 'Contribution', 'Risk']]
+    # Return the relevant subset of the DataFrame
+    return factor_df[['Source of Return', 'Contribution', 'Risk']]
 
 
-# import pandas as pd
-
-# def create_factor_lists(factor_df2):
-#     """
-#     This function takes a dataframe and generates lists based on the 'Source of Return' column.
+def create_factor_lists(factor_df2):
+    """
+    This function takes a dataframe and generates lists based on the 'Source of Return' column.
     
-#     Args:
-#     factor_df2 (pd.DataFrame): The dataframe containing the factor data.
+    Args:
+    factor_df2 (pd.DataFrame): The dataframe containing the factor data.
     
-#     Returns:
-#     dict: A dictionary containing lists for Style, Country, Industry, Currency, Market, and Sectors.
-#     """
+    Returns:
+    dict: A dictionary containing lists for Style, Country, Industry, Currency, Market, and Sectors.
+    """
     
-#     # Initialize lists to store the values
-#     style_list = []
-#     country_list = []
-#     industry_list = []
-#     currency_list = []
-#     market_list = []
-#     sector_list = []
+    # Initialize lists to store the values
+    style_list = []
+    country_list = []
+    industry_list = []
+    currency_list = []
+    market_list = []
+    sector_list = []
+    summary_list=['Portfolio','Benchmark','Active']
+    decomp_list=['Style','Country','Industry','Currency','Market','Specific Return']
 
-#     # Start a flag to keep track of the section you're in
-#     current_section = None
+    # Start a flag to keep track of the section you're in
+    current_section = None
 
-#     # Iterate over each row in the dataframe's 'Source of Return' column (or the column with text values)
-#     for value in factor_df2['Source of Return']:
-#         if value == "Style":
-#             current_section = "Style"
-#         elif value == "Country":
-#             current_section = "Country"
-#         elif value == "Industry":
-#             current_section = "Industry"
-#         elif value == "Currency":
-#             current_section = "Currency"
-#         elif value == "Market":
-#             current_section = "Market"
-#         elif value == "Sectors":
-#             current_section = "Sectors"
+    # Iterate over each row in the dataframe's 'Source of Return' column (or the column with text values)
+    for value in factor_df2['Source of Return']:
+        if value == "Style":
+            current_section = "Style"
+        elif value == "Country":
+            current_section = "Country"
+        elif value == "Industry":
+            current_section = "Industry"
+        elif value == "Currency":
+            current_section = "Currency"
+        elif value == "Market":
+            current_section = "Market"
+        elif value == "Sectors":
+            current_section = "Sectors"
         
-#         # Add the value to the appropriate list based on the current section
-#         if current_section == "Style" and value != "Country":
-#             style_list.append(value)
-#             if value=='Style':
-#                 style_list.remove(value)
-#         elif current_section == "Country" and value != "Industry":
-#             country_list.append(value)
-#             if value=='Country':
-#                 country_list.remove(value)
-#         elif current_section == "Industry" and value != "Currency":
-#             industry_list.append(value)
-#             if value=='Industry':
-#                 industry_list.remove(value)
-#         elif current_section == "Currency" and value != "Market":
-#             currency_list.append(value)
-#             if value=='Currency':
-#                 currency_list.remove(value)
-#         elif current_section == "Market" and value != "Sectors":
-#             market_list.append(value)
-#             if value=='Market':
-#                 market_list.remove(value)
-#         elif current_section == "Sectors":
-#             sector_list.append(value)
-#             if value=='Sectors':
-#                 sector_list.remove(value)
+        # Add the value to the appropriate list based on the current section
+        if current_section == "Style" and value != "Country":
+            style_list.append(value)
+            if value=='Style':
+                style_list.remove(value)
+        elif current_section == "Country" and value != "Industry":
+            country_list.append(value)
+            if value=='Country':
+                country_list.remove(value)
+        elif current_section == "Industry" and value != "Currency":
+            industry_list.append(value)
+            if value=='Industry':
+                industry_list.remove(value)
+        elif current_section == "Currency" and value != "Market":
+            currency_list.append(value)
+            if value=='Currency':
+                currency_list.remove(value)
+        elif current_section == "Market" and value != "Sectors":
+            market_list.append(value)
+            if value=='Market':
+                market_list.remove(value)
+        elif current_section == "Sectors":
+            sector_list.append(value)
+            if value=='Sectors':
+                sector_list.remove(value)
 
-#     # Return the lists as a dictionary
-#     return {
-#         "Style": style_list,
-#         "Country": country_list,
-#         "Industry": industry_list,
-#         "Currency": currency_list,
-#         "Market": market_list,
-#         "Sectors": sector_list
-#     }
+    # Return the lists as a dictionary
+    return {
+        "Style": style_list,
+        "Country": country_list,
+        "Industry": industry_list,
+        "Currency": currency_list,
+        "Market": market_list,
+        "Sectors": sector_list,
+        "Summary":summary_list,
+        "Return Decomposition":decomp_list
+    }
 
-# # Example usage:
-# # Assuming you have a DataFrame `factor_df2` already loaded
-# # factor_lists = create_factor_lists(factor_df2)
-# # print(factor_lists)
+# Function to load and display the factor attribution analysis
+def factor_attribution_analysis(factor_file):
+    # Load the factor data
+    factor_data = load_factor_data(factor_file)  # Assuming a function to load the factor data
+    
+    # Create factor lists for Style, Country, Sector, Industry, Summary, and Decomposition
+    factor_lists = create_factor_lists(factor_data)
+    summary_list = factor_lists['Summary']
+    decomp_list = factor_lists['Return Decomposition']
+    style_list = factor_lists['Style']
+    country_list = factor_lists['Country']
+    sector_list = factor_lists['Sectors']
+    industry_list = factor_lists['Industry']
+
+    # Create DataFrames for Summary, Decomposition, Style, Country, Sector, and Industry
+    summary_df = factor_data[factor_data['Source of Return'].isin(summary_list)]
+    decomp_df = factor_data[factor_data['Source of Return'].isin(decomp_list)]
+    decomp_df['Source of Return']=decomp_df['Source of Return'].replace('Specific Return','Stock Specific')
+    style_df = factor_data[factor_data['Source of Return'].isin(style_list)]
+    country_df = factor_data[factor_data['Source of Return'].isin(country_list)]
+    sector_df = factor_data[factor_data['Source of Return'].isin(sector_list)]
+    industry_df = factor_data[factor_data['Source of Return'].isin(industry_list)]
+
+
+    ## Ordering for decomposition chart
+    # # Manually define the new order of the 'Source of Return' values
+    new_order = ['Style', 'Country', 'Industry', 'Currency', 'Market','Stock Specific']
+
+    # Create a new column for the order
+    decomp_df['New Order'] = pd.Categorical(decomp_df['Source of Return'], categories=new_order, ordered=True)
+
+    # Sort the DataFrame based on the 'New Order' column
+    decomp_df2 = decomp_df.sort_values(by='New Order').drop(columns=['New Order']) 
+
+    ## Industry df reduced to TOP and BOTTOM 5
+    industry_df2=industry_df.sort_values(by=['Contribution'],ascending=False)
+    top5=industry_df2.head(5)
+    bottom5=industry_df2.tail(5)
+    industry_df3=pd.concat([top5,bottom5])
+    # Function to create the vertical bar chart for summary
+    def create_summary_vertical_fig(df, title):
+        # Sort the DataFrame by 'Contribution' with positive contributions first
+        df_sorted = df.sort_values(by=['Contribution'], ascending=False)
+        # bar_colors = ['#000002' for val in df_sorted['Contribution']]  # All risk bars will have the same color
+
+        # Create the vertical bar chart for Contribution
+        bar_trace_contrib = go.Bar(
+            x=df_sorted['Source of Return'],  # x for categories (Source of Return)
+            y=df_sorted['Contribution'],      # y for the Contribution
+            name='Contribution to Active Return',
+            marker=dict(color='#000002'),  # Blue color for Contribution bars
+            orientation='v'  # This makes the bars vertical
+        )
+
+        # Create the vertical bar chart for Risk
+        bar_trace_risk = go.Bar(
+            x=df_sorted['Source of Return'],  # x for categories (Source of Return)
+            y=df_sorted['Risk'],      # y for the Risk
+            name='Risk',
+            marker=dict(color='#000001'),  # Orange color for Risk bars
+            orientation='v'  # This makes the bars vertical
+        )
+
+        # Define the layout
+        layout = go.Layout(
+            title=title,
+            yaxis=dict(
+                tickformat='.1%',
+                side='left', showgrid=True
+            ),
+            xaxis=dict(
+                side='bottom', showgrid=False
+            ),
+            barmode='group',  # Group bars side by side
+            showlegend=True,
+            legend=dict(
+                x=0.5,  # Position legend to the right of the plot
+                y=-0.35,  # Position legend below the plot
+                xanchor='center',  # Center the legend horizontally
+                yanchor='bottom',
+                traceorder='normal',
+                orientation='h',
+                font=dict(size=12),
+                itemwidth=50,  # Set width for each legend item
+                tracegroupgap=8
+            )
+        )
+
+        # Create the figure
+        fig = go.Figure(data=[bar_trace_contrib, bar_trace_risk], layout=layout)
+        return fig
+    # Function to create the horizontal bar chart for sector, industry, style, and country
+    def create_fig(df, title):
+        # Sort the DataFrame by 'Contribution' with positive contributions first
+        df['Contribution_Sign'] = df['Contribution'] > 0  # Create a new column for sorting by sign
+        df_sorted = df.sort_values(by=['Contribution_Sign', 'Contribution'], ascending=[False, False])
+        bar_colors = ['#000002' if val > 0 else '#000001' for val in df_sorted['Contribution']]
+
+        # Create the horizontal bar chart for Contribution
+        bar_trace = go.Bar(
+            y=df_sorted['Source of Return'],  # Change x to y for horizontal bars
+            x=df_sorted['Contribution'],      # Change y to x for horizontal bars
+            name='Contribution to Active Return',
+            marker=dict(color=bar_colors),
+            orientation='h'  # This makes the bars horizontal
+        )
+
+        # Create the scatter plot for Risk (with secondary x-axis)
+        scatter_trace = go.Scatter(
+            x=df_sorted['Risk'],  # Plotting 'Risk' on the secondary x-axis
+            y=df_sorted['Source of Return'],  # Keeping 'Source of Return' on the y-axis
+            mode='markers',
+            name='Risk',
+            xaxis='x2',  # Assign to secondary x-axis
+            marker=dict(color='darkblue', size=6, line=dict(width=2, color='red'))
+        )
+
+        # Define the layout with two x-axes
+        layout = go.Layout(
+            title=title,
+            xaxis=dict(
+                title='Contribution to Active Return',
+                tickformat='.3%',
+                side='bottom', showgrid=False,ticks='outside'
+            ),
+            xaxis2=dict(  # Secondary x-axis for 'Risk'
+                title='Risk',
+                overlaying='x',
+                tickformat='.3%',
+                side='top',  # Put the secondary axis at the top
+                showgrid=False,ticks='outside'
+            ),
+            yaxis=dict(
+                side='left', showgrid=True
+            ),
+            barmode='group',
+            showlegend=True
+        )
+
+        # Create the figure
+        fig = go.Figure(data=[bar_trace, scatter_trace], layout=layout)
+        return fig
+
+
+
+   
+
+    # Function to create the vertical bar chart for Decomposition
+    def create_decomp_vertical_fig(df, title):
+
+    # Create the vertical bar chart for Contribution
+        bar_trace_contrib = go.Bar(
+        x=df['Source of Return'],  # x for categories (Source of Return)
+        y=df['Contribution'],      # y for the Contribution
+        name='Contribution to Active Return',
+        marker=dict(color='#000002'),
+        orientation='v'  # This makes the bars vertical
+    )
+
+    # Create the vertical bar chart for Risk
+        bar_trace_risk = go.Bar(
+        x=df['Source of Return'],  # x for categories (Source of Return)
+        y=df['Risk'],      # y for the Risk
+        name='Risk',
+        marker=dict(color='#000001'),  # Orange color for Risk bars
+        orientation='v'  # This makes the bars vertical
+    )
+
+    # Define the layout
+        layout = go.Layout(
+        title=title,
+        yaxis=dict(
+            tickformat='.1%',
+            side='left', showgrid=True
+        ),
+        xaxis=dict(
+            side='bottom', showgrid=False
+        ),
+        barmode='group',  # Group bars side by side
+        showlegend=True,
+        legend=dict(
+            x=0.5,  # Position legend to the right of the plot
+            y=-0.35,  # Position legend below the plot
+            xanchor='center',  # Center the legend horizontally
+            yanchor='bottom',
+            traceorder='normal',
+            orientation='h',
+            font=dict(size=12),
+            itemwidth=50,  # Set width for each legend item
+            tracegroupgap=8
+        )
+    )
+
+    # Create the figure
+        fig = go.Figure(data=[bar_trace_contrib, bar_trace_risk], layout=layout)
+        return fig
 
 
 
 
+    # Create the sector, industry, style, and country figures
+    fig_sector = create_fig(sector_df, 'By Sector Factors')
+    fig_industry = create_fig(industry_df3, 'By Industry Factors')
+    fig_style = create_fig(style_df, 'By Style Factors')
+    fig_country = create_fig(country_df, 'By Country Factors')
+
+    # Create vertical bar charts for summary and decomp
+    fig_summary = create_summary_vertical_fig(summary_df, 'Summary')
+    fig_decomp = create_decomp_vertical_fig(decomp_df2, 'Contribution to Active Return: Factor Group Vs Stock Specific')
+
+    return fig_sector, fig_industry, fig_style, fig_country, fig_summary, fig_decomp

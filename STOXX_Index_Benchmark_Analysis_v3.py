@@ -386,7 +386,7 @@ def main():
         # =========================================================
         if factor_file:
             # Load and process the factor attribution data
-            fig_sector, fig_industry, fig_style, fig_country, fig_summary, fig_decomp = functions.factor_attribution_analysis(factor_file)
+            fig_sector, fig_industry, fig_style, fig_country, fig_summary, fig_decomp,summary_df, decomp_df2, style_df, country_df, sector_df,industry_df3 = functions.factor_attribution_analysis(factor_file)
             
             st.title('Factor Attribution Analysis')
 
@@ -394,8 +394,26 @@ def main():
             col5, col6 = st.columns([0.6, 0.6])
             with col5:
                 st.plotly_chart(fig_summary)
+                csv_summary = convert_df_to_csv(summary_df)
+                st.markdown("<div style='text-align:center; margin-top: 10px;'>", unsafe_allow_html=True)
+                st.download_button(
+                label="Download Active Risk-Return Summary",
+                data=csv_summary,
+                 file_name="summary_data.csv",
+                 mime="text/csv"
+                 )
+                st.markdown("</div>", unsafe_allow_html=True)
             with col6:
                 st.plotly_chart(fig_decomp)
+                csv_decomp = convert_df_to_csv(decomp_df2)
+                st.markdown("<div style='text-align:center; margin-top: 10px;'>", unsafe_allow_html=True)
+                st.download_button(
+                label="Download Active Return Decomposition Data",
+                data=csv_decomp,
+                 file_name="decomposition_data.csv",
+                 mime="text/csv"
+                 )
+                st.markdown("</div>", unsafe_allow_html=True)
             
             # st.title('Contribution to Active Return')
             st.write("<h2 style='font-size: 20px;'>Contribution to Active Return (by different factors)</h2>", unsafe_allow_html=True)
@@ -405,15 +423,51 @@ def main():
             col7, col8 = st.columns([0.6, 0.6])
             with col7:
                 st.plotly_chart(fig_style)
+                csv_style = convert_df_to_csv(style_df)
+                st.markdown("<div style='text-align:center; margin-top: 10px;'>", unsafe_allow_html=True)
+                st.download_button(
+                label="Download Style Factor Contribution Data",
+                data=csv_style,
+                 file_name="style_factor_data.csv",
+                 mime="text/csv"
+                 )
+                st.markdown("</div>", unsafe_allow_html=True)
             with col8:
                 st.plotly_chart(fig_country)
+                csv_country = convert_df_to_csv(country_df)
+                st.markdown("<div style='text-align:center; margin-top: 10px;'>", unsafe_allow_html=True)
+                st.download_button(
+                label="Download Country Factor Contribution Data",
+                data=csv_country,
+                 file_name="country_factor_data.csv",
+                 mime="text/csv"
+                 )
+                st.markdown("</div>", unsafe_allow_html=True)
 
             # Finally, another set of columns for the Sector and Industry charts
             col9, col10 = st.columns([0.6, 0.6])
             with col9:
                 st.plotly_chart(fig_sector)
+                csv_sector = convert_df_to_csv(sector_df)
+                st.markdown("<div style='text-align:center; margin-top: 10px;'>", unsafe_allow_html=True)
+                st.download_button(
+                label="Download Sector Factor Contribution Data",
+                data=csv_sector,
+                 file_name="sector_factor_data.csv",
+                 mime="text/csv"
+                 )
+                st.markdown("</div>", unsafe_allow_html=True)
             with col10:
                 st.plotly_chart(fig_industry)
+                csv_industry = convert_df_to_csv(industry_df3)
+                st.markdown("<div style='text-align:center; margin-top: 10px;'>", unsafe_allow_html=True)
+                st.download_button(
+                label="Download Industry Factor Contribution Data",
+                data=csv_industry,
+                 file_name="industry_factor_data.csv",
+                 mime="text/csv"
+                 )
+                st.markdown("</div>", unsafe_allow_html=True)
 # Run the Streamlit app
 if __name__ == '__main__':
     main()

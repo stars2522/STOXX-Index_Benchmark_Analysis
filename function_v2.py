@@ -17,7 +17,7 @@ def process_index_data(file_path, portfolio_name):
     
     # Select relevant columns and convert 'Date' to datetime format
     index_file2 = index_file[['Date', 'Indexvalue']]
-    index_file2['Date'] = pd.to_datetime(index_file2['Date'])
+    index_file2['Date'] = pd.to_datetime(index_file2['Date'],format='%d.%m.%Y')
     
     # Rename the columns based on the provided portfolio name
     index_file2.rename(columns={
@@ -115,12 +115,12 @@ def get_period_dates(df):
     # Initialize a list to store period information
     period_dates = []
 
-    # 1-Month Start and End Date
-    start_date_1m = end_date.replace(day=1)  # Start date should be the first day of the current month
-    actual_start_date_1m = get_closest_date(start_date_1m, df)
-    last_value_date_1m=actual_start_date_1m-pd.DateOffset(days=1)
-    last_value_date_1m = get_previous_available_date(last_value_date_1m, df)
-    period_dates.append({"Period": "1 Month", "Last Value Date": last_value_date_1m, "Start Date": actual_start_date_1m, "End Date": end_date})
+    ## Overall return
+    start_date_overall=df['Date'].min()+pd.DateOffset(days=1)
+    actual_start_date_overall=get_closest_date(start_date_overall, df)
+    last_value_date_overall=df['Date'].min()
+    period_dates.append({"Period": "Overall", "Last Value Date": last_value_date_overall, "Start Date": actual_start_date_overall, "End Date": end_date})
+
     
     # YTD Start and End Date
     start_date_ytd = pd.to_datetime(f"{end_date.year}-01-01")
@@ -128,6 +128,13 @@ def get_period_dates(df):
     last_value_date_ytd=actual_start_date_ytd-pd.DateOffset(days=1)
     last_value_date_ytd = get_previous_available_date(last_value_date_ytd, df)
     period_dates.append({"Period": "YTD", "Last Value Date": last_value_date_ytd, "Start Date": actual_start_date_ytd, "End Date": end_date})
+    
+    # 1-Month Start and End Date
+    start_date_1m = end_date.replace(day=1)  # Start date should be the first day of the current month
+    actual_start_date_1m = get_closest_date(start_date_1m, df)
+    last_value_date_1m=actual_start_date_1m-pd.DateOffset(days=1)
+    last_value_date_1m = get_previous_available_date(last_value_date_1m, df)
+    period_dates.append({"Period": "1 Month", "Last Value Date": last_value_date_1m, "Start Date": actual_start_date_1m, "End Date": end_date})
 
 
     # 1-Year Start and End Date (considering leap year)

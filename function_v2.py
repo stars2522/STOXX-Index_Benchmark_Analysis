@@ -563,8 +563,7 @@ def factor_attribution_analysis(factor_file):
     # Function to create the horizontal bar chart for sector, industry, style, and country
     def create_fig(df, title):
         # Sort the DataFrame by 'Contribution' with positive contributions first
-        df['Contribution_Sign'] = df['Contribution'] > 0  # Create a new column for sorting by sign
-        df_sorted = df.sort_values(by=['Contribution_Sign', 'Contribution'], ascending=[False, False])
+        df_sorted = df.sort_values(by=['Contribution'], ascending=True)
         bar_colors = ['#000002' if val > 0 else '#000001' for val in df_sorted['Contribution']]
 
         # Create the horizontal bar chart for Contribution
@@ -679,4 +678,4 @@ def factor_attribution_analysis(factor_file):
     fig_summary = create_summary_vertical_fig(summary_df, 'Summary')
     fig_decomp = create_decomp_vertical_fig(decomp_df2, 'Contribution to Active Return: Factor Group Vs Stock Specific')
 
-    return fig_sector, fig_industry, fig_style, fig_country, fig_summary, fig_decomp
+    return fig_sector, fig_industry, fig_style, fig_country, fig_summary, fig_decomp,summary_df, decomp_df2, style_df, country_df, sector_df,industry_df3
